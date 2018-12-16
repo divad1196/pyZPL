@@ -27,6 +27,9 @@ Box.draw = drawBox
 
 
 #Define the Edit Menu
+def listboxRename(app,index,text):
+    app.objects.delete(index)
+    app.objects.insert(index,text)
 def editObj(obj,app,attr,value):
     print(value)
     setattr(obj,attr,value)
@@ -36,15 +39,31 @@ def numBox(obj,frame,app,attr):
     parent = frame
     canvas = app.canvas
     if hasattr(obj,attr):
+        label = Label(parent,text=attr)
+        label.pack()
+        # label.grid(row=parent.grid_size()[0],column=0)
         tmp = Spinbox(parent, from_=0,to=1000,wrap=True,
                 command=lambda:editObj(obj,app,attr,int(tmp.get())))
         tmp.delete(0,END)
         tmp.insert(0,str(getattr(obj,attr)))
         tmp.bind("<Return>",lambda event: editObj(obj,app,attr,int(event.widget.get())))
+        # tmp.grid(row=parent.grid_size()[0],column=1)
         tmp.pack()
         return tmp
     else:
         print("attribut " + str(attr) + " does not exist")
+
+def labelFrame(app,index):
+    text = app.objects.get(index)
+    parent = app.editor
+    label = Entry(parent)
+    label.delete(0,END)
+    label.insert(0,text)
+    l = LabelFrame(parent, labelwidget=label)
+    label.bind("<Return>",lambda event: listboxRename(app,index,event.widget.get()))
+    parent.add(l)
+    return l
+
 
 def defaultLabelFrame(app):
     parent = app.editor
@@ -54,12 +73,15 @@ def defaultLabelFrame(app):
     return l
 
 def editZPL(self,app):
+    index = 0
     parent = app.editor
-    l = LabelFrame(parent, text="ZPL")
+    l = labelFrame(app,index)#LabelFrame(parent, text="ZPL")
     parent.add(l)
     Label(l, text="Editer le zpl").pack()
 
     width = numBox(self,l,app,"width")
+    height = numBox(self,l,app,"height")
+    dpmm = numBox(self,l,app,"dpmm")
     
     return l
 
@@ -133,6 +155,7 @@ class App():
 
 if __name__ == "__main__":
     app = App()
+    app.draw()
     app.run()
 
 
