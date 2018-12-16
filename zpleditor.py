@@ -32,14 +32,15 @@ def editObj(obj,app,attr,value):
     setattr(obj,attr,value)
     app.draw()
 
-def numBox(obj,app,attr):
-    parent = app.editor
+def numBox(obj,frame,app,attr):
+    parent = frame
     canvas = app.canvas
     if hasattr(obj,attr):
-        tmp = Spinbox(parent, from_=0,to=1000,wrap=True,command=lambda:editObj(obj,attr,tmp,canvas))
+        tmp = Spinbox(parent, from_=0,to=1000,wrap=True,
+                command=lambda:editObj(obj,app,attr,int(tmp.get())))
         tmp.delete(0,END)
         tmp.insert(0,str(getattr(obj,attr)))
-        tmp.bind("<Return>",lambda event: editObj(obj,attr,event,int(widget.get),canvas))
+        tmp.bind("<Return>",lambda event: editObj(obj,app,attr,int(event.widget.get())))
         tmp.pack()
         return tmp
     else:
@@ -58,7 +59,7 @@ def editZPL(self,app):
     parent.add(l)
     Label(l, text="Editer le zpl").pack()
 
-    width = numbox(self,app,"width")
+    width = numBox(self,l,app,"width")
     
     return l
 
@@ -87,10 +88,10 @@ class App():
         self.panel.add(self.editor)
         self.objects = Listbox(self.editor)
         self.editor.add(self.objects)
-        self.objects.bind('<<ListboxSelect>>',lambda evt: self.edit_active_object(evt))
+        self.objects.bind('<<ListboxSelect>>',lambda evt: app.edit_active_object(evt))
         self.objects.insert(END,"ZPL")
         self.panel.add(self.editor)
-        self.labelframe = self.zpl.edit(self.editor)
+        self.labelframe = self.zpl.edit(self)
         #===========================================================================================
         #Create Buttons
         self.actions.add(Button(self.actions,text='new Horizontal Line', command=lambda: self.createHLine()))
@@ -104,11 +105,9 @@ class App():
         w = evt.widget
         index = int(w.curselection()[0])
         if index == 0:
-            # print("show zpl editor")
             self.labelframe = self.zpl.edit(self)
         else:
             curent_object = self.zpl._childs[index-1]
-            # print("show object")
             if hasattr(curent_object,'edit'):
                 self.labelframe = curent_object.edit(self)
             else:
@@ -128,7 +127,7 @@ class App():
         app.objects.insert(END,"Box")
         self.zpl.draw(self.canvas)
     def draw(self):
-        self.zpl.draw(canvas)
+        self.zpl.draw(self.canvas)
     def run(self):
         self.win.mainloop()
 
