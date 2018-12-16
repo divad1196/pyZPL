@@ -5,6 +5,7 @@ from tkinter import *
 
 #Define how to draw ZPL-Objects
 def drawZPL(self,canvas):
+    canvas.delete("all")
     canvas.create_rectangle(0,0,self.width * self.dpmm,self.height * self.dpmm,outline='green')
     for child in self._childs:
         if hasattr(child,'draw'):
@@ -26,16 +27,39 @@ Box.draw = drawBox
 
 
 #Define the Edit Menu
-def defaultLabelFrame(parent):
+def editObj(obj,app,attr,value):
+    print(value)
+    setattr(obj,attr,value)
+    app.draw()
+
+def numBox(obj,app,attr):
+    parent = app.editor
+    canvas = app.canvas
+    if hasattr(obj,attr):
+        tmp = Spinbox(parent, from_=0,to=1000,wrap=True,command=lambda:editObj(obj,attr,tmp,canvas))
+        tmp.delete(0,END)
+        tmp.insert(0,str(getattr(obj,attr)))
+        tmp.bind("<Return>",lambda event: editObj(obj,attr,event,int(widget.get),canvas))
+        tmp.pack()
+        return tmp
+    else:
+        print("attribut " + str(attr) + " does not exist")
+
+def defaultLabelFrame(app):
+    parent = app.editor
     l = LabelFrame(parent, text="Empty")
     parent.add(l)
     Label(l, text="the selected object doesn't have editor").pack()
     return l
 
-def editZPL(self,parent):
+def editZPL(self,app):
+    parent = app.editor
     l = LabelFrame(parent, text="ZPL")
     parent.add(l)
     Label(l, text="Editer le zpl").pack()
+
+    width = numbox(self,app,"width")
+    
     return l
 
 ZPL.edit = editZPL
@@ -59,21 +83,14 @@ class App():
         self.canvas = Canvas(self.panel,width=400,height=400, background='yellow')
         self.panel.add(self.canvas)
 
-        self.editing = PanedWindow(self.panel, orient=HORIZONTAL)
-        self.panel.add(self.editing)
-        self.objects = Listbox(self.editing)
-        self.editing.add(self.objects)
+        self.editor = PanedWindow(self.panel, orient=HORIZONTAL)
+        self.panel.add(self.editor)
+        self.objects = Listbox(self.editor)
+        self.editor.add(self.objects)
         self.objects.bind('<<ListboxSelect>>',lambda evt: self.edit_active_object(evt))
         self.objects.insert(END,"ZPL")
-        self.editor = PanedWindow(self.editing, orient=VERTICAL)
-        self.panel.add(self.editing)
-        self.labelframe = self.zpl.edit(self.editing)
-
-        # scrollbar = Scrollbar(self.panel)
-        # scrollbar.pack(side=RIGHT, fill=Y)
-        # self.objects = Listbox(self.panel, yscrollcommand=scrollbar.set)
-        # self.panel.add(self.objects)
-        # scrollbar.config(command=self.objects.yview)
+        self.panel.add(self.editor)
+        self.labelframe = self.zpl.edit(self.editor)
         #===========================================================================================
         #Create Buttons
         self.actions.add(Button(self.actions,text='new Horizontal Line', command=lambda: self.createHLine()))
@@ -83,24 +100,24 @@ class App():
 
     def edit_active_object(self,evt):
         self.labelframe.destroy()
-        del self.labelframe
+        # del self.labelframe
         w = evt.widget
         index = int(w.curselection()[0])
         if index == 0:
             # print("show zpl editor")
-            self.labelframe = self.zpl.edit(self.editing)
+            self.labelframe = self.zpl.edit(self)
         else:
             curent_object = self.zpl._childs[index-1]
             # print("show object")
             if hasattr(curent_object,'edit'):
-                self.labelframe = curent_object.edit(self.editing)
+                self.labelframe = curent_object.edit(self)
             else:
-                self.labelframe = defaultLabelFrame(self.editing)
+                self.labelframe = defaultLabelFrame(self)
 
     def createHLine(self):
         tmp = self.zpl.HLine(length=200,x=50,y=50,border=2)
         app.objects.insert(END,"HLine")
-        # self.editor.add(Button(self.editor,text='HLine', command=lambda: print('test')))
+        # Button(self.win,text='HLine', command=lambda: print('test')))
         self.zpl.draw(self.canvas)
     def createVLine(self):
         self.zpl.VLine(length=200,x=50,y=50,border=2)
@@ -110,6 +127,8 @@ class App():
         self.zpl.Box(length=100,height=100,x=50,y=50,border=2)
         app.objects.insert(END,"Box")
         self.zpl.draw(self.canvas)
+    def draw(self):
+        self.zpl.draw(canvas)
     def run(self):
         self.win.mainloop()
 
