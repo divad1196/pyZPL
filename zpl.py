@@ -55,16 +55,16 @@ class ZPL():
         self._childs.append(child)
         return child
 
-    def Vline(self,length,x=0,y=0,border=1):
-        tmp = _VLine(length,x,y,border)
+    def VLine(self,length,x=0,y=0,border=1):
+        tmp = VLine(length,x,y,border)
         return self._addChild(tmp)
 
-    def Hline(self,length,x=0,y=0,border=1):
-        tmp = _HLine(length,x,y,border)
+    def HLine(self,length,x=0,y=0,border=1):
+        tmp = HLine(length,x,y,border)
         return self._addChild(tmp)
 
     def Box(self,length,height,x=0,y=0,border=1):
-        tmp = _Box(length,height,x,y,border)
+        tmp = Box(length,height,x,y,border)
         return self._addChild(tmp)
 
     def Text(self,width,x=0,y=0,border=False,interline=1,fontsize=DEFAULTFONTSIZE,align="L"):
@@ -178,7 +178,7 @@ class _Text():
     
 
 
-class _VLine():
+class VLine():
     def __init__(self,length,x=0,y=0,border=1):
         self.length = length
         self.x = x
@@ -189,7 +189,7 @@ class _VLine():
         return "^FO" + str(self.x) + "," + str(self.y)\
             + "^GB" + str(self.length) + ",1," + str(self.border) + "^FS"
 
-class _HLine():
+class HLine():
     def __init__(self,length,x=0,y=0,border=1):
         self.length = length
         self.x = x
@@ -200,7 +200,7 @@ class _HLine():
         return "^FO" + str(self.x) + "," + str(self.y) \
             + "^GB1,"+ str(self.length) + "," + str(self.border) + "^FS"
 
-class _Box():
+class Box():
     def __init__(self,length,height,x=0,y=0,border=1):
         self.length = length
         self.height = height
