@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from zpl import *
-from tkinter import * 
+from tkinter import *
+from pathlib import Path
 
 
 #Define how to draw ZPL-Objects
@@ -27,12 +28,19 @@ Box.draw = drawBox
 
 
 #Define the Edit Menu
+#------------------------
+#usefull functions
 def listboxRename(app,index,text):
     app.objects.delete(index)
     app.objects.insert(index,text)
-def editObj(obj,app,attr,value):
+def editObj(obj,app,attr,value,spinbox):
     print(value)
-    setattr(obj,attr,value)
+    tmp = value
+    if tmp < 0:
+        tmp = 0
+        spinbox.delete(0,END)
+        spinbox.insert(0,str(0))
+    setattr(obj,attr,tmp)
     app.draw()
 
 def numBox(obj,frame,app,attr):
@@ -43,10 +51,10 @@ def numBox(obj,frame,app,attr):
         label.pack()
         # label.grid(row=parent.grid_size()[0],column=0)
         tmp = Spinbox(parent, from_=0,to=1000,wrap=True,
-                command=lambda:editObj(obj,app,attr,int(tmp.get())))
+                command=lambda:editObj(obj,app,attr,int(tmp.get()),tmp))
         tmp.delete(0,END)
         tmp.insert(0,str(getattr(obj,attr)))
-        tmp.bind("<Return>",lambda event: editObj(obj,app,attr,int(event.widget.get())))
+        tmp.bind("<Return>",lambda event: editObj(obj,app,attr,int(event.widget.get()),tmp))
         # tmp.grid(row=parent.grid_size()[0],column=1)
         tmp.pack()
         return tmp
@@ -72,10 +80,13 @@ def defaultLabelFrame(app):
     Label(l, text="the selected object doesn't have editor").pack()
     return l
 
+#-------------------------------------------------------------------------
+#objects editors
+
 def editZPL(self,app):
     index = 0
     parent = app.editor
-    l = labelFrame(app,index)#LabelFrame(parent, text="ZPL")
+    l = labelFrame(app,index)
     parent.add(l)
     Label(l, text="Editer le zpl").pack()
 
@@ -87,14 +98,65 @@ def editZPL(self,app):
 
 ZPL.edit = editZPL
 
+def editHline(self,app,index):
+    parent = app.editor
+    l = labelFrame(app,index)
+    parent.add(l)
+    Label(l, text="Editer la HLine").pack()
 
+    length = numBox(self,l,app,"length")
+    x = numBox(self,l,app,"x")
+    y = numBox(self,l,app,"y")
+    border = numBox(self,l,app,"border")
+    
+    return l
 
+HLine.edit = editHline
+
+def editVline(self,app,index):
+    parent = app.editor
+    l = labelFrame(app,index)
+    parent.add(l)
+    Label(l, text="Editer la VLine").pack()
+
+    length = numBox(self,l,app,"length")
+    x = numBox(self,l,app,"x")
+    y = numBox(self,l,app,"y")
+    border = numBox(self,l,app,"border")
+    
+    return l
+
+VLine.edit = editVline
+
+def editBox(self,app,index):
+    parent = app.editor
+    l = labelFrame(app,index)
+    parent.add(l)
+    Label(l, text="Editer la Box").pack()
+
+    length = numBox(self,l,app,"length")
+    height = numBox(self,l,app,"height")
+    x = numBox(self,l,app,"x")
+    y = numBox(self,l,app,"y")
+    border = numBox(self,l,app,"border")
+    
+    return l
+
+Box.edit = editBox
 
 class App():
     def __init__(self):
         self.win = Tk(className=" ZPL Editor ")
         self.zpl = ZPL(78,49,6)
+        self.active_index = 0
+
+        #Menus
+        self.main_menu = Menu(self.win)
+        self.menu1 = Menu(self.main_menu, tearoff=0)
+        self.menu1.add_command(label="Print", command=lambda: self.printZPL())
+        self.main_menu.add_cascade(label="Fichier", menu=self.menu1)
        
+        self.win.config(menu=self.main_menu)
         #main panel to keep every
         self.panel = PanedWindow(self.win, orient=HORIZONTAL)
         self.panel.pack(side=TOP, expand=Y, fill=BOTH, pady=2, padx=2)
@@ -122,18 +184,20 @@ class App():
         self.actions.add(Label(self.actions))
 
     def edit_active_object(self,evt):
-        self.labelframe.destroy()
-        # del self.labelframe
         w = evt.widget
-        index = int(w.curselection()[0])
-        if index == 0:
-            self.labelframe = self.zpl.edit(self)
-        else:
-            curent_object = self.zpl._childs[index-1]
-            if hasattr(curent_object,'edit'):
-                self.labelframe = curent_object.edit(self)
+        select = w.curselection()
+        index = int(select[0]) if select else self.active_index
+        if  index != self.active_index:
+            self.labelframe.destroy()
+            self.active_index = index
+            if index == 0:
+                self.labelframe = self.zpl.edit(self)
             else:
-                self.labelframe = defaultLabelFrame(self)
+                curent_object = self.zpl._childs[index-1]
+                if hasattr(curent_object,'edit'):
+                    self.labelframe = curent_object.edit(self,index)
+                else:
+                    self.labelframe = defaultLabelFrame(self)
 
     def createHLine(self):
         tmp = self.zpl.HLine(length=200,x=50,y=50,border=2)
@@ -148,6 +212,11 @@ class App():
         self.zpl.Box(length=100,height=100,x=50,y=50,border=2)
         app.objects.insert(END,"Box")
         self.zpl.draw(self.canvas)
+    def printZPL(self):
+        filename = self.objects.get(0) + ".zpl"
+        with open(str(Path.home()) + "/" + filename, 'x') as f:
+            f.write(str(self.zpl))
+
     def draw(self):
         self.zpl.draw(self.canvas)
     def run(self):
