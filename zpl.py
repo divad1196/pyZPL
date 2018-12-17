@@ -184,10 +184,10 @@ class VLine():
         self.x = x
         self.y = y
         self.border = border
-    
     def __str__(self):
-        return "^FO" + str(self.x) + "," + str(self.y)\
-            + "^GB" + str(self.length) + ",1," + str(self.border) + "^FS"
+        return "^FO" + str(self.x) + "," + str(self.y) \
+            + "^GB1,"+ str(self.length) + "," + str(self.border) + "^FS"
+    
 
 class HLine():
     def __init__(self,length,x=0,y=0,border=1):
@@ -197,8 +197,8 @@ class HLine():
         self.border = border
     
     def __str__(self):
-        return "^FO" + str(self.x) + "," + str(self.y) \
-            + "^GB1,"+ str(self.length) + "," + str(self.border) + "^FS"
+        return "^FO" + str(self.x) + "," + str(self.y)\
+            + "^GB" + str(self.length) + ",1," + str(self.border) + "^FS"
 
 class Box():
     def __init__(self,length,height,x=0,y=0,border=1):
