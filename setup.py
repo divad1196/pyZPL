@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(
-    name='pyZPL',
+    name='pyZPLEditor',
     version='0.1',
     author="Gallay David",
     author_email="davidtennis96@hotmail.com",
