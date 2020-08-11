@@ -23,7 +23,7 @@ class ZPL():
     """
     _start = "^XA"
     _end = "^XZ"
-    def __init__(self,width,height,dpmm):
+    def __init__(self, width, height, dpmm):
         """
         width and height given in mm
         """
@@ -55,28 +55,76 @@ class ZPL():
         self._childs.append(child)
         return child
 
-    def VLine(self,length,x=0,y=0,border=1):
+    def VLine(self, length, x=0, y=0, border=1):
         tmp = VLine(length,x,y,border)
         return self._addChild(tmp)
 
-    def HLine(self,length,x=0,y=0,border=1):
+    def HLine(self, length, x=0, y=0, border=1):
         tmp = HLine(length,x,y,border)
         return self._addChild(tmp)
 
-    def Box(self,length,height,x=0,y=0,border=1):
+    def Box(self, length, height, x=0, y=0, border=1):
         tmp = Box(length,height,x,y,border)
         return self._addChild(tmp)
 
-    def Text(self,width,x=0,y=0,border=False,interline=1,fontsize=DEFAULTFONTSIZE,align="L"):
-        tmp = _Text(width,x,y,border,interline,fontsize,align)
+    def Text(self,
+        width,
+        x=0,
+        y=0,
+        border=False,
+        interline=1,
+        fontsize=DEFAULTFONTSIZE,
+        align="L"
+    ):
+        tmp = _Text(
+            width,
+            x,
+            y,
+            border,
+            interline,
+            fontsize,
+            align
+        )
         return self._addChild(tmp)
 
-    def NText(self,text,width,x=0,y=0,h=DEFAULTFONTSIZE,w=DEFAULTFONTSIZE,align="L",max_line=1,interline=0,indent=0):
-        tmp = _NText(text=text,width=width,x=x,y=y,h=h,w=w,align=align,max_line=max_line,interline=interline,indent=indent)
+    def NText(
+        self,
+        text,
+        width,
+        x=0,
+        y=0,
+        h=DEFAULTFONTSIZE,
+        w=DEFAULTFONTSIZE,
+        align="L",
+        max_line=1,
+        interline=0,
+        indent=0
+    ):
+        tmp = _NText(
+            text=text,
+            width=width,
+            x=x,
+            y=y,
+            h=h,
+            w=w,
+            align=align,
+            max_line=max_line,
+            interline=interline,
+            indent=indent
+        )
         return self._addChild(tmp)
 
 class _TextLine():
-    def __init__(self,text,width,x=0,y=0,h=DEFAULTFONTSIZE,w=DEFAULTFONTSIZE,align="L"):
+    def __init__(
+        self,
+        text,
+        width,
+        x=0,
+        y=0,
+        h=DEFAULTFONTSIZE,
+        w=DEFAULTFONTSIZE,
+        align="L"
+    ):
         """ x and y: origin position
             h and w: height and width of characters
             width: width of the text field
@@ -99,7 +147,19 @@ class _TextLine():
 
 class _NText():
     """N stand for Native, it implements the native text field of zpl """
-    def __init__(self,text,width,x=0,y=0,h=DEFAULTFONTSIZE,w=DEFAULTFONTSIZE,align="L",max_line=1,interline=0,indent=0):#,border=False
+    def __init__(
+        self,
+        text,
+        width,
+        x=0,
+        y=0,
+        h=DEFAULTFONTSIZE,
+        w=DEFAULTFONTSIZE,
+        align="L",
+        max_line=1,
+        interline=0,
+        indent=0
+    ):#,border=False
         """ x and y: origin position (up-left corner)
             h and w: height and width of characters
             max_line: maximum lines authorized, used to handle text exceeding
@@ -179,7 +239,7 @@ class _Text():
 
 
 class VLine():
-    def __init__(self,length,x=0,y=0,border=1):
+    def __init__(self, length, x=0, y=0, border=1):
         self.length = length
         self.x = x
         self.y = y
@@ -190,7 +250,7 @@ class VLine():
     
 
 class HLine():
-    def __init__(self,length,x=0,y=0,border=1):
+    def __init__(self, length, x=0, y=0, border=1):
         self.length = length
         self.x = x
         self.y = y
@@ -201,7 +261,7 @@ class HLine():
             + "^GB" + str(self.length) + ",1," + str(self.border) + "^FS"
 
 class Box():
-    def __init__(self,length,height,x=0,y=0,border=1):
+    def __init__(self, length, height, x=0, y=0, border=1):
         self.length = length
         self.height = height
         self.x = x
@@ -213,7 +273,7 @@ class Box():
             + "^GB" + str(self.length) + "," + str(self.height) + "," + str(self.border) + "^FS"
 
 class _BarCode():
-    def __init__(self,text,x=0,y=0):
+    def __init__(self, text, x=0, y=0):
         self.width = 2
         self.text = text
         self.x = x
@@ -224,11 +284,3 @@ class _BarCode():
             + "^BY"+ str(self.width) + "\n" \
             + "^FD" + self.text + "^FS"
 
-
-zpl = ZPL(78,49,6)
-text = zpl.Text(300,x=100,fontsize=20)
-ligne1 = text.newLine("salut")
-text.fontsize = 12
-ligne = text.newLine("ca va?")
-text.fontsize = 40
-ligne1 = text.newLine("Test")
