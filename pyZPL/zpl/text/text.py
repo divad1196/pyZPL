@@ -1,7 +1,7 @@
 from ..defaults import DEFAULTFONTSIZE
 from .text_line import TextLine
 
-class _Text():
+class Text():
     def __init__(self,width,x=0,y=0,border=False,interline=0,fontsize=DEFAULTFONTSIZE,align="L"):
         """ x and y: origin position
             h and w: height and width of characters

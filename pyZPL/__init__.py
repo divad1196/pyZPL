@@ -1,1 +1,1 @@
-from zpl import ZPL
+from .zpl import ZPL

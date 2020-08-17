@@ -1,25 +1,52 @@
 #!/usr/bin/python3
-from zpl import *
+from .zpl import ZPL, Box, VLine, HLine
 from tkinter import *
 from pathlib import Path
 
 
 #Define how to draw ZPL-Objects
-def drawZPL(self,canvas):
+def drawZPL(self, canvas):
     canvas.delete("all")
-    canvas.create_rectangle(0,0,self.width * self.dpmm,self.height * self.dpmm,outline='green')
+    canvas.create_rectangle(
+        0,
+        0,
+        self.width * self.dpmm,
+        self.height * self.dpmm,
+        outline='grey'
+    )
     for child in self._childs:
-        if hasattr(child,'draw'):
+        if hasattr(child, 'draw'):
             child.draw(canvas)
 
-def drawHLine(self,canvas):
-    canvas.create_line(self.x,self.y,self.x + self.length,self.y,width=self.border,activefill='red')
+def drawHLine(self, canvas):
+    canvas.create_line(
+        self.x,
+        self.y,
+        self.x + self.length,
+        self.y,
+        width=self.border,
+        activefill='red'
+    )
 
-def drawVLine(self,canvas):
-    canvas.create_line(self.x,self.y,self.x, self.length + self.y,width=self.border,activefill='red')
+def drawVLine(self, canvas):
+    canvas.create_line(
+        self.x,
+        self.y,
+        self.x,
+        self.length + self.y,
+        width=self.border,
+        activefill='red'
+    )
 
-def drawBox(self,canvas):
-    canvas.create_rectangle(self.x, self.y, self.x + self.length, self.y + self.height,width=self.border,activeoutline='red')
+def drawBox(self, canvas):
+    canvas.create_rectangle(
+        self.x,
+        self.y,
+        self.x + self.length,
+        self.y + self.height,
+        width=self.border,
+        activeoutline='red'
+    )
 
 ZPL.draw = drawZPL
 HLine.draw = drawHLine
@@ -33,17 +60,18 @@ Box.draw = drawBox
 def listboxRename(app,index,text):
     app.objects.delete(index)
     app.objects.insert(index,text)
-def editObj(obj,app,attr,value,spinbox):
+
+def editObj(obj, app, attr, value, spinbox):
     print(value)
     tmp = value
     if tmp < 0:
         tmp = 0
-        spinbox.delete(0,END)
-        spinbox.insert(0,str(0))
-    setattr(obj,attr,tmp)
+        spinbox.delete(0, END)
+        spinbox.insert(0, str(0))
+    setattr(obj, attr, tmp)
     app.draw()
 
-def numBox(obj,frame,app,attr):
+def numBox(obj, frame, app, attr):
     parent = frame
     canvas = app.canvas
     if hasattr(obj,attr):
@@ -54,21 +82,21 @@ def numBox(obj,frame,app,attr):
                 command=lambda:editObj(obj,app,attr,int(tmp.get()),tmp))
         tmp.delete(0,END)
         tmp.insert(0,str(getattr(obj,attr)))
-        tmp.bind("<Return>",lambda event: editObj(obj,app,attr,int(event.widget.get()),tmp))
+        tmp.bind("<Return>", lambda event: editObj(obj, app, attr, int(event.widget.get()), tmp))
         # tmp.grid(row=parent.grid_size()[0],column=1)
         tmp.pack()
         return tmp
     else:
         print("attribut " + str(attr) + " does not exist")
 
-def labelFrame(app,index):
+def labelFrame(app, index):
     text = app.objects.get(index)
     parent = app.editor
     label = Entry(parent)
     label.delete(0,END)
     label.insert(0,text)
     l = LabelFrame(parent, labelwidget=label)
-    label.bind("<Return>",lambda event: listboxRename(app,index,event.widget.get()))
+    label.bind("<Return>",lambda event: listboxRename(app, index, event.widget.get()))
     parent.add(l)
     return l
 
@@ -165,16 +193,25 @@ class App():
         self.actions = PanedWindow(self.panel, orient=VERTICAL)
         self.panel.add(self.actions)
 
-        self.canvas = Canvas(self.panel,width=400,height=400, background='yellow')
+        self.canvas = Canvas(
+            self.panel,
+            width=400,
+            height=400,
+            background='yellow'
+        )
         self.panel.add(self.canvas)
 
-        self.editor = PanedWindow(self.panel, orient=HORIZONTAL)
+        self.editor = PanedWindow(
+            self.panel,
+            orient=HORIZONTAL,
+        )
         self.panel.add(self.editor)
         self.objects = Listbox(self.editor)
+
         self.editor.add(self.objects)
-        self.objects.bind('<<ListboxSelect>>',lambda evt: app.edit_active_object(evt))
+        self.objects.bind('<<ListboxSelect>>',lambda evt: self.edit_active_object(evt))
         self.objects.insert(END,"ZPL")
-        self.panel.add(self.editor)
+        
         self.labelframe = self.zpl.edit(self)
         #===========================================================================================
         #Create Buttons
@@ -193,25 +230,28 @@ class App():
             if index == 0:
                 self.labelframe = self.zpl.edit(self)
             else:
-                curent_object = self.zpl._childs[index-1]
+                curent_object = self.zpl._childs[index - 1]
                 if hasattr(curent_object,'edit'):
-                    self.labelframe = curent_object.edit(self,index)
+                    self.labelframe = curent_object.edit(self, index)
                 else:
                     self.labelframe = defaultLabelFrame(self)
 
     def createHLine(self):
-        tmp = self.zpl.HLine(length=200,x=50,y=50,border=2)
-        app.objects.insert(END,"HLine")
+        tmp = self.zpl.HLine(length=200, x=50, y=50, border=2)
+        self.objects.insert(END,"HLine")
         # Button(self.win,text='HLine', command=lambda: print('test')))
         self.zpl.draw(self.canvas)
+
     def createVLine(self):
         self.zpl.VLine(length=200,x=50,y=50,border=2)
-        app.objects.insert(END,"VLine")
+        self.objects.insert(END, "VLine")
         self.zpl.draw(self.canvas)
+
     def createBox(self):
         self.zpl.Box(length=100,height=100,x=50,y=50,border=2)
-        app.objects.insert(END,"Box")
+        self.objects.insert(END, "Box")
         self.zpl.draw(self.canvas)
+
     def printZPL(self):
         filename = self.objects.get(0) + ".zpl"
         with open(str(Path.home()) + "/" + filename, 'x') as f:
@@ -219,13 +259,11 @@ class App():
 
     def draw(self):
         self.zpl.draw(self.canvas)
+
     def run(self):
+        self.draw()
         self.win.mainloop()
 
-if __name__ == "__main__":
-    app = App()
-    app.draw()
-    app.run()
 
 
 
